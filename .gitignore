@@ -1,0 +1,15 @@
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+/build/
+/.idea/
+.vscode/
+*.iml
+.DS_Store
+pubspec.lock
+.gradle/
+/android/.gradle/
+/ios/Flutter/Flutter.framework
+/ios/Pods/
+**/GeneratedPluginRegistrant.*
