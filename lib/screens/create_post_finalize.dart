@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/posts_repository.dart';
 import '../models/profile_repository.dart';
+import '../widgets/platform_image.dart';
 
 class CreatePostFinalizeScreen extends StatefulWidget {
   final String imageUrl;
@@ -41,8 +41,7 @@ class _CreatePostFinalizeScreenState extends State<CreatePostFinalizeScreen> {
             child: SizedBox(
               width: 160,
               height: 160,
-              child: CachedNetworkImage(
-                  imageUrl: widget.imageUrl, fit: BoxFit.contain),
+              child: PlatformImage(widget.imageUrl, fit: BoxFit.contain),
             ),
           ),
           const SizedBox(height: 12),
@@ -117,8 +116,12 @@ class _CreatePostFinalizeScreenState extends State<CreatePostFinalizeScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8))),
-                onPressed: () {
-                  // Add post to repository and return to the feed
+                onPressed: () async {
+                  // Ask about sharing to Facebook first (bottom-sheet)
+                  final shareToFacebook = await _showFacebookSharePrompt();
+
+                  // You could use `shareToFacebook` to toggle cross-posting behavior.
+                  // For now, we always create the post locally regardless of choice.
                   final newPost = Post(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     media: [
@@ -141,6 +144,93 @@ class _CreatePostFinalizeScreenState extends State<CreatePostFinalizeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<bool?> _showFacebookSharePrompt() {
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: false,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Center(
+                  child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                          color: Colors.black12,
+                          borderRadius: BorderRadius.circular(4))),
+                ),
+                const SizedBox(height: 12),
+                const Text('Always share posts to Facebook?',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12)),
+                      child: const Icon(Icons.facebook)),
+                  title: const Text(
+                      'Let your friends see your posts, no matter which app they\'re on.'),
+                ),
+                ListTile(
+                  leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12)),
+                      child: const Icon(Icons.lock_outline)),
+                  title: const Text(
+                      'You will share as yourself. Your audience for posts on Facebook is private.'),
+                ),
+                ListTile(
+                  leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12)),
+                      child: const Icon(Icons.settings)),
+                  title: const Text(
+                      'You can change your sharing settings in Accounts Center and each time you share.'),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8))),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Share posts',
+                        style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Not now')),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

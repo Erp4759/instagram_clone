@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/profile_repository.dart';
 import '../models/posts_repository.dart';
 import 'post_detail_screen.dart';
+import 'profile_followers_tabs.dart';
 
 class _StatBlock extends StatelessWidget {
   final String count;
@@ -142,8 +143,23 @@ class _UserProfileContentState extends State<UserProfileContent> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _StatBlock(count: '117', label: 'posts'),
-                      _StatBlock(count: '10.7M', label: 'followers'),
-                      _StatBlock(count: '4', label: 'following'),
+                      // Followers count (not tappable per request)
+                      _StatBlock(
+                          count:
+                              '${_repo.getFollowersFor(widget.username).length}',
+                          label: 'followers'),
+                      // Following count (tappable: opens following list for this user)
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => ProfileFollowersTabs(
+                                  initialIndex: 1, username: widget.username)));
+                        },
+                        child: _StatBlock(
+                            count:
+                                '${_repo.getFollowingFor(widget.username).length}',
+                            label: 'following'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),

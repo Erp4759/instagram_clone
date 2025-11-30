@@ -62,6 +62,33 @@ class PostsRepository extends ChangeNotifier {
   static final PostsRepository instance = PostsRepository._();
 
   void _initSamples() {
+    // Add two initial posts authored by the current user so they appear
+    // at the top of the profile page when the app starts.
+    _posts.insert(
+      0,
+      Post(
+        id: 'me-post-2',
+        media: [
+          MediaItem(url: 'https://picsum.photos/seed/me_post2/800/1000'),
+        ],
+        author: ProfileRepository.instance.username,
+        caption: 'Another day, another post',
+        likesCount: 5,
+      ),
+    );
+    _posts.insert(
+      0,
+      Post(
+        id: 'me-post-1',
+        media: [
+          MediaItem(url: 'https://picsum.photos/seed/me_post1/800/1000'),
+        ],
+        author: ProfileRepository.instance.username,
+        caption: 'Hello from my profile!',
+        likesCount: 12,
+      ),
+    );
+
     // Multi-image post
     _posts.add(Post(
       id: 'sample-multi-1',

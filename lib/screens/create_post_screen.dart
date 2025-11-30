@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
+import '../widgets/platform_image.dart';
 import 'create_post_editor.dart';
 
 class CreatePostScreen extends StatefulWidget {
@@ -43,6 +44,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ],
         ),
         actions: [
+          if (_selectedTab == 1)
+            IconButton(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.photo_library_outlined)),
           TextButton(
               onPressed: () => _onNext(context), child: const Text('Next'))
         ],
@@ -51,9 +56,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         children: [
           // Large preview
           AspectRatio(
-            aspectRatio: 1,
-            child: CachedNetworkImage(imageUrl: selectedUrl, fit: BoxFit.cover),
-          ),
+              aspectRatio: 1,
+              child: PlatformImage(selectedUrl, fit: BoxFit.cover)),
 
           // Thumbnails row
           SizedBox(
@@ -65,10 +69,37 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   itemBuilder: (context, index) {
-                    final url = _items[index];
-                    final selected = index == _selectedIndex;
+                    final hasGalleryTile = _selectedTab == 1;
+                    final displayIndex = hasGalleryTile ? index - 1 : index;
+
+                    // If PHOTO tab and index == 0, show a gallery access tile
+                    if (hasGalleryTile && index == 0) {
+                      return GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          width: 100,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                              color: Colors.black12,
+                              borderRadius: BorderRadius.circular(8)),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.photo_library, size: 32),
+                              SizedBox(height: 6),
+                              Text('Gallery', style: TextStyle(fontSize: 12))
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    final url =
+                        _items[displayIndex.clamp(0, _items.length - 1)];
+                    final selected = displayIndex == _selectedIndex;
                     return GestureDetector(
-                      onTap: () => setState(() => _selectedIndex = index),
+                      onTap: () =>
+                          setState(() => _selectedIndex = displayIndex),
                       child: Container(
                         width: 100,
                         margin: const EdgeInsets.only(right: 8),
@@ -80,8 +111,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            CachedNetworkImage(
-                                imageUrl: url, fit: BoxFit.cover),
+                            PlatformImage(url, fit: BoxFit.cover),
                             if (selected)
                               Align(
                                 alignment: Alignment.topRight,
@@ -101,7 +131,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     );
                   },
                   separatorBuilder: (_, __) => const SizedBox(width: 4),
-                  itemCount: _items.length,
+                  itemCount: _items.length + (_selectedTab == 1 ? 1 : 0),
                 ),
 
                 // Select multiple button at top-right
@@ -139,6 +169,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ),
           const Divider(height: 1),
           const SizedBox(height: 8),
+
+          // When on the Gallery tab show a centered Gallery button to open picker
+          if (_selectedTab == 0)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(Icons.photo_library_outlined),
+                  label: const Text('Open Gallery'),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -168,5 +213,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final selected = _items[_selectedIndex];
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => CreatePostEditorScreen(imageUrl: selected)));
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    try {
+      final xfile = await picker.pickImage(source: ImageSource.gallery);
+      if (xfile == null) return;
+      final path = xfile.path;
+      if (!mounted) return;
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => CreatePostEditorScreen(imageUrl: path)));
+    } catch (e) {
+      // ignore errors for now
+    }
   }
 }

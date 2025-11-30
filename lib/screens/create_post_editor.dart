@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/platform_image.dart';
 import 'create_post_finalize.dart';
 
 class CreatePostEditorScreen extends StatefulWidget {
@@ -60,15 +60,8 @@ class _CreatePostEditorScreenState extends State<CreatePostEditorScreen> {
         child: Column(
           children: [
             Expanded(
-              child: CachedNetworkImage(
-                imageUrl: widget.imageUrl,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                placeholder: (c, s) =>
-                    const Center(child: CircularProgressIndicator()),
-                errorWidget: (c, s, e) =>
-                    const Center(child: Icon(Icons.broken_image)),
-              ),
+              child: PlatformImage(widget.imageUrl,
+                  fit: BoxFit.contain, width: double.infinity),
             ),
 
             // Audio carousel area

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import '../models/posts_repository.dart';
+import 'platform_image.dart';
 
 class MediaCarousel extends StatefulWidget {
   final List<MediaItem> media;
@@ -80,12 +80,10 @@ class _MediaCarouselState extends State<MediaCarousel> {
           itemBuilder: (context, index) {
             final item = widget.media[index];
             if (item.type == MediaType.image) {
-              return CachedNetworkImage(
-                imageUrl: item.url,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              );
+              return PlatformImage(item.url,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity);
             } else {
               final controller = _videoControllers[index];
               final initError = _videoInitErrors[index];

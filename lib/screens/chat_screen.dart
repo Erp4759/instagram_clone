@@ -78,22 +78,26 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     _scrollToBottom();
 
-    // Simple auto-reply rules (local/demo only):
-    // - If message contains both "how" and "are" -> reply "I am good"
-    // - Else if message contains the word "hi" -> reply "hello"
-    // - Else if message contains the word "hello" -> reply "hi"
-    // Replies are case-insensitive and match full words.
-    // If an image was sent, pick one of 5 two-sentence image replies at random.
-    String reply;
+    // More varied auto-reply rules (local/demo only):
+    // - Replies are chosen from several categories (greetings, thanks, questions,
+    //   compliments, clarifications, small talk, etc.) and include emojis.
+    // - Image replies have a richer set of descriptive responses.
+    // - Occasionally the bot will send a short follow-up message after the
+    //   main reply to add variety.
+    final List<String> repliesPool = [];
     if (isImage) {
-      final replies = [
-        'Wow, this looks great! The colors are amazing and really pop.',
-        'Nice shot! The composition is on point and very pleasing to look at.',
-        'Lovely picture — it tells a story and I love the mood.',
+      repliesPool.addAll([
+        'Wow, this looks great! The colors are amazing and really pop. 😍',
+        'Nice shot — the composition is on point and very pleasing to look at.',
+        'Lovely picture — it tells a story and I love the mood. 🙂',
         'This is stunning! The detail is fantastic and very crisp.',
-        'So cool! The lighting and angle make this really stand out.'
-      ];
-      reply = replies[_rnd.nextInt(replies.length)];
+        'So cool! The lighting and angle make this really stand out. 🔥',
+        'Beautiful capture — where did you take this?',
+        'Gorgeous! The tones here are sublime.',
+        'That perspective is awesome — perfect framing!',
+        'Epic photo. Would love to see more like this.',
+        'Amazing texture and depth — really nice.'
+      ]);
     } else {
       final lower = text.toLowerCase();
       final hasHow = RegExp(r"\bhow\b").hasMatch(lower);
@@ -104,32 +108,68 @@ class _ChatScreenState extends State<ChatScreen> {
       final hasBye = RegExp(r"\bbye|goodbye\b").hasMatch(lower);
       final hasWhat = RegExp(r"\bwhat\b").hasMatch(lower);
       final hasGood = RegExp(r"\bgood|great|awesome\b").hasMatch(lower);
+      final hasWhere = RegExp(r"\bwhere\b").hasMatch(lower);
+      final hasWhen = RegExp(r"\bwhen\b").hasMatch(lower);
+      final hasWhy = RegExp(r"\bwhy\b").hasMatch(lower);
+      final hasWho = RegExp(r"\bwho\b").hasMatch(lower);
 
       if (hasHow && hasAre) {
-        reply = 'I am good';
-      } else if (hasHi) {
-        reply = 'hello';
-      } else if (hasHello) {
-        reply = 'hi';
-      } else if (hasThank) {
-        reply = 'You are welcome!';
-      } else if (hasBye) {
-        reply = 'See you!';
-      } else if (hasWhat) {
-        reply = 'What do you mean?';
-      } else if (hasGood) {
-        reply = 'Amazing!';
-      } else {
-        // default random responses when nothing matched
-        final defaults = ['Oh I agree with you', 'Amazing!', 'For real'];
-        reply = defaults[_rnd.nextInt(defaults.length)];
+        repliesPool.addAll(
+            ['I am good, thanks! How about you? 😊', 'Doing well — you?']);
+      }
+      if (hasHi || hasHello) {
+        repliesPool.addAll(['Hey there!', 'Hello! 👋', 'Hi! How’s it going?']);
+      }
+      if (hasThank) {
+        repliesPool.addAll([
+          'You’re welcome! 🙏',
+          'Anytime — happy to help!',
+          'No problem! 😊'
+        ]);
+      }
+      if (hasBye) {
+        repliesPool.addAll(
+            ['See you later!', 'Bye — take care!', 'Catch you soon! ✌️']);
+      }
+      if (hasWhat || hasWhy || hasWho || hasWhere || hasWhen) {
+        repliesPool.addAll([
+          'Could you clarify a bit?',
+          'What do you mean by that?',
+          'I’m not sure — can you explain?',
+          'Do you mean right now or later?'
+        ]);
+      }
+      if (hasGood) {
+        repliesPool
+            .addAll(['Amazing! 😄', 'That’s awesome — love it!', 'So good!']);
+      }
+
+      // If no specific patterns matched, add a wider variety of generic
+      // responses to choose from.
+      if (repliesPool.isEmpty) {
+        repliesPool.addAll([
+          'Oh I agree with you.',
+          'Totally — that makes sense!',
+          'For real. 😂',
+          'Nice one!',
+          'Haha, that’s great.',
+          'I didn’t expect that — interesting!',
+          'Hmm… tell me more.',
+          'Sounds good to me.',
+          'That’s pretty cool.',
+          'I hear you.'
+        ]);
       }
     }
 
+    // Pick the main reply randomly from the pool
+    final reply = repliesPool[_rnd.nextInt(repliesPool.length)];
+
     // simulate typing time based on message length (longer messages -> longer typing)
-    int typingMs = text.length * 120; // ~120ms per char
-    if (typingMs < 800) typingMs = 800;
-    if (typingMs > 2500) typingMs = 2500;
+    int typingMs =
+        (text.isNotEmpty ? text.length * 100 : 900); // ~100ms per char
+    if (typingMs < 700) typingMs = 700;
+    if (typingMs > 3000) typingMs = 3000;
 
     // simulate a short delay like a real reply
     Future.delayed(Duration(milliseconds: typingMs), () {
@@ -154,6 +194,29 @@ class _ChatScreenState extends State<ChatScreen> {
         _isTyping = false;
       });
       _scrollToBottom();
+
+      // Occasionally send a short follow-up reply to make conversations feel
+      // less deterministic. ~25% chance to send a 2nd short message.
+      if (_rnd.nextDouble() < 0.25) {
+        Future.delayed(Duration(milliseconds: 600 + _rnd.nextInt(800)), () {
+          final followUps = [
+            '😂',
+            'Nice!',
+            'Totally.',
+            '👌',
+            '👍',
+            'Haha',
+            '✨'
+          ];
+          final f = followUps[_rnd.nextInt(followUps.length)];
+          ChatRepository.instance.addMessage(widget.name, {
+            'text': f,
+            'sent': false,
+            'timestamp': DateTime.now(),
+          });
+          _scrollToBottom();
+        });
+      }
     });
   }
 

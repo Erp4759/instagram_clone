@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/platform_image.dart';
 import 'create_post_screen.dart';
 import 'edit_profile_screen.dart';
 import 'profile_followers_tabs.dart';
@@ -280,8 +281,7 @@ class ProfileContent extends StatelessWidget {
                             );
                           },
                           child: post.media.first.type == MediaType.image
-                              ? CachedNetworkImage(
-                                  imageUrl: post.media.first.url,
+                              ? PlatformImage(post.media.first.url,
                                   fit: BoxFit.cover)
                               : Container(
                                   color: Colors.black12,

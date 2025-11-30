@@ -40,6 +40,64 @@ class HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   String? _viewingUsername;
 
+  void _showCreateMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text('Create',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.video_call_outlined),
+                title: const Text('Reel'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.grid_on),
+                title: const Text('Post'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => const CreatePostScreen()));
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.grid_on_outlined),
+                title: const Text('Share only to profile'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showInlineProfile(String username) {
     // Ensure the Home tab is selected so the inline profile is visible.
     setState(() {
@@ -96,9 +154,20 @@ class HomePageState extends State<HomePage> {
           // Post header (username + avatar)
           ListTile(
             onTap: () {
-              // Show this user's profile inline (keeps bottom nav visible)
+              // If the tapped user is the current user, switch to the
+              // Profile tab (same behavior as tapping the profile icon).
+              final tapped = _usernameForIndex(index);
+              if (tapped == ProfileRepository.instance.username) {
+                setState(() {
+                  _selectedIndex = 4;
+                  _viewingUsername = null;
+                });
+                return;
+              }
+              // Otherwise show the tapped user's profile inline.
               setState(() {
-                _viewingUsername = _usernameForIndex(index);
+                _selectedIndex = 0;
+                _viewingUsername = tapped;
               });
             },
             leading: CircleAvatar(
@@ -230,18 +299,29 @@ class HomePageState extends State<HomePage> {
         children: [
           ListTile(
             onTap: () {
-              // Switch to the profile tab instead of pushing a new route so
-              // the bottom navigation remains visible and the app behaves
-              // like pressing the profile button.
+              // If this post is authored by the current user, navigate to the
+              // Profile tab so the view matches tapping the profile icon.
+              if (p.author == ProfileRepository.instance.username) {
+                setState(() {
+                  _selectedIndex = 4;
+                  _viewingUsername = null;
+                });
+                return;
+              }
+              // Otherwise show the tapped user's profile inline.
               setState(() {
-                _selectedIndex = 4;
+                _selectedIndex = 0;
+                _viewingUsername = p.author;
               });
             },
             leading: CircleAvatar(
               radius: 20,
-              backgroundImage: ProfileRepository.instance.avatarImage,
+              backgroundImage: p.author == ProfileRepository.instance.username
+                  ? ProfileRepository.instance.avatarImage
+                  : NetworkImage(
+                      'https://picsum.photos/seed/profile_${p.author}/200/200'),
             ),
-            title: Text(ProfileRepository.instance.username,
+            title: Text(p.author,
                 style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Text('${p.createdAt.toLocal()}'),
             trailing:
@@ -343,6 +423,11 @@ class HomePageState extends State<HomePage> {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (i) {
+            if (i == 2) {
+              // Middle add button -> open create menu instead of switching tab
+              _showCreateMenu(context);
+              return;
+            }
             setState(() {
               _selectedIndex = i;
               _viewingUsername = null;
@@ -660,6 +745,10 @@ class HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (i) {
+          if (i == 2) {
+            _showCreateMenu(context);
+            return;
+          }
           setState(() => _selectedIndex = i);
         },
         type: BottomNavigationBarType.fixed,

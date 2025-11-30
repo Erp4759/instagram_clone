@@ -14,6 +14,7 @@ class ProfileFollowersTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final repo = ProfileRepository.instance;
+    // Use repo accessors that handle other users' follower/following lists.
     return DefaultTabController(
       length: 4,
       initialIndex: initialIndex,
@@ -39,10 +40,12 @@ class ProfileFollowersTabs extends StatelessWidget {
                 isScrollable: true,
                 tabs: [
                   Tab(
-                      child: Text('${repo.followers.length} followers',
+                      child: Text(
+                          '${repo.getFollowersFor(username).length} followers',
                           style: const TextStyle(fontSize: 14))),
                   Tab(
-                      child: Text('${repo.following.length} following',
+                      child: Text(
+                          '${repo.getFollowingFor(username).length} following',
                           style: const TextStyle(fontSize: 14))),
                   Tab(
                       child: Text('${repo.subscriptions.length} subscriptions',
@@ -56,8 +59,10 @@ class ProfileFollowersTabs extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            _buildUserList(context, repo.followers),
-            _buildUserList(context, repo.following),
+            _buildUserList(context, repo.getFollowersFor(username),
+                allowOpen: false),
+            _buildUserList(context, repo.getFollowingFor(username),
+                allowOpen: true),
             _buildUserList(context, repo.subscriptions),
             _buildFlaggedPlaceholder(),
           ],
@@ -66,7 +71,8 @@ class ProfileFollowersTabs extends StatelessWidget {
     );
   }
 
-  Widget _buildUserList(BuildContext context, List<String> users) {
+  Widget _buildUserList(BuildContext context, List<String> users,
+      {bool allowOpen = true}) {
     if (users.isEmpty) {
       return const Center(child: Text('No users'));
     }
@@ -76,6 +82,53 @@ class ProfileFollowersTabs extends StatelessWidget {
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final u = users[index];
+        final content = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              _StoryAvatar(seed: u, size: 52),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(u,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text('Display name',
+                        style: TextStyle(
+                            color: Colors.grey.shade600, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                height: 36,
+                child: OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF0EBFB),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18)),
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                  ),
+                  child: const Text('Message',
+                      style: TextStyle(color: Colors.black)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.more_vert, color: Colors.black54),
+              ),
+            ],
+          ),
+        );
+
+        if (!allowOpen) return content;
+
         return InkWell(
           onTap: () async {
             // Capture the navigator to avoid using `context` after an await.
@@ -98,50 +151,7 @@ class ProfileFollowersTabs extends StatelessWidget {
                   builder: (_) => UserProfileScreen(username: u)));
             }
           },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                _StoryAvatar(seed: u, size: 52),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(u,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 16)),
-                      const SizedBox(height: 4),
-                      Text('Display name',
-                          style: TextStyle(
-                              color: Colors.grey.shade600, fontSize: 13)),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  height: 36,
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF0EBFB),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18)),
-                      side: BorderSide.none,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                    ),
-                    child: const Text('Message',
-                        style: TextStyle(color: Colors.black)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.more_vert, color: Colors.black54),
-                ),
-              ],
-            ),
-          ),
+          child: content,
         );
       },
     );
