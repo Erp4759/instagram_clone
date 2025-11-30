@@ -60,7 +60,7 @@ class ProfileFollowersTabs extends StatelessWidget {
         body: TabBarView(
           children: [
             _buildUserList(context, repo.getFollowersFor(username),
-              allowOpen: true),
+                allowOpen: true),
             _buildUserList(context, repo.getFollowingFor(username),
                 allowOpen: true),
             _buildUserList(context, repo.subscriptions),
