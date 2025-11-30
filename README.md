@@ -1,33 +1,58 @@
-# Instagram-like Flutter UI (starter)
+# Instagram Clone (Flutter)
 
-This workspace contains a minimal Flutter scaffold to start building an Instagram-like interface.
+Concise Flutter project for an Instagram‑like UI and flows.
 
-## What I added
-- `lib/main.dart` — starter UI skeleton (stories + grid posts + bottom bar)
-- `pubspec.yaml` — project manifest with common dependencies
-- `.gitignore`
-- `assets/images/` — placeholder folder for local assets
+## Requirements
+- Flutter SDK installed; run `flutter doctor` to verify.
+- Xcode (for iOS/macOS), Android Studio/SDK (for Android), CocoaPods on macOS.
 
-## Prerequisites
-- macOS with a working terminal (zsh).
-- Install Flutter SDK: follow https://docs.flutter.dev/get-started/install
-- Ensure `flutter` is on your PATH and run `flutter doctor`.
+## Project Structure
+- `lib/`
+	- `main.dart` — app entry and routing.
+	- `models/` — simple repositories: `chat_repository.dart`, `posts_repository.dart`, `profile_repository.dart`.
+	- `screens/` — feature screens (feed, profiles, creation, chat, etc.).
+	- `widgets/` — shared UI (carousel, image adapters, sheets).
+- `assets/images/` — image assets (declared in `pubspec.yaml`).
+- `android/`, `macos/`, `web/` — platform targets.
 
-## Quick start
-Open a terminal in the project root and run:
+## Notable Files
+- `lib/screens/home_screen.dart` — feed grid and navigation hub.
+- `lib/screens/create_post_*` — post creation flow (picker → editor → finalize).
+- `lib/widgets/media_carousel.dart` — media paging/indicators.
+- `lib/widgets/platform_image*.dart` — platform image abstraction (web/IO/stub).
+
+## Run
+From the project root:
 
 ```bash
-cd /Users/erikp/Documents/vscode/inst/instagram_clone
 flutter pub get
-flutter run
+flutter devices        # pick a device id
+flutter run -d <device-id>
 ```
 
-If you want to open the project in VS Code, use `code .` and install the Flutter and Dart extensions.
+Examples:
+- Android emulator: `flutter run -d emulator-5554`
+- iOS simulator: `flutter run -d ios`
+- macOS desktop: `flutter run -d macos`
+- Web (Chrome): `flutter run -d chrome`
 
-## Next steps I can do for you
-- Wire up navigation and dummy post detail pages
-- Add login/signup flows
-- Add local assets and example images
-- Add tests and CI config
+## Platform Notes (brief)
+- iOS/macOS: add usage descriptions in `Info.plist` if using camera/gallery/video:
+	- `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, `NSMicrophoneUsageDescription`.
+- Android: ensure required permissions in `android/app/src/main/AndroidManifest.xml` for camera/gallery as needed.
 
-Tell me which next step you'd like, or run the app and tell me any issues you encounter.
+## Assets
+- Place images under `assets/images/`.
+- Already referenced in `pubspec.yaml` → `flutter.assets`.
+
+## Dependencies (key)
+- `image_picker`, `video_player`, `shared_preferences`, `provider`, `cached_network_image`, `flutter_staggered_grid_view`.
+
+## Dev Tips
+- Hot reload: `r` in the running terminal or VS Code Flutter actions.
+- Linting: `flutter analyze` (configured via `analysis_options.yaml`).
+- Tests: `flutter test` (add tests under `test/`).
+
+## Troubleshooting (quick)
+- If iOS/macOS build fails after dependency changes: `cd ios && pod install` or `cd macos && pod install` (then return to root).
+- If builds act stale: `flutter clean && flutter pub get`.
