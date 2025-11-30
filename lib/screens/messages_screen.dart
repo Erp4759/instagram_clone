@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'chat_screen.dart';
 import '../models/chat_repository.dart';
+import '../models/profile_repository.dart';
 
 class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
@@ -65,10 +66,11 @@ class _MessagesPageState extends State<MessagesPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Row(
-          children: const [
-            Text('ta_junhyuk', style: TextStyle(fontWeight: FontWeight.w600)),
-            SizedBox(width: 6),
-            Icon(Icons.arrow_drop_down),
+          children: [
+            Text(ProfileRepository.instance.username,
+                style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(width: 6),
+            const Icon(Icons.arrow_drop_down),
           ],
         ),
         actions: [
