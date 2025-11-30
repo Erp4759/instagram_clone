@@ -13,7 +13,6 @@ Concise Flutter project for an Instagram‑like UI and flows.
 	- `screens/` — feature screens (feed, profiles, creation, chat, etc.).
 	- `widgets/` — shared UI (carousel, image adapters, sheets).
 - `assets/images/` — image assets (declared in `pubspec.yaml`).
-- `android/`, `macos/`, `web/` — platform targets.
 - `android/` — Android platform target (this README focuses on Android).
 
 ## Notable Files
