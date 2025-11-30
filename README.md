@@ -4,7 +4,7 @@ Concise Flutter project for an Instagram‑like UI and flows.
 
 ## Requirements
 - Flutter SDK installed; run `flutter doctor` to verify.
-- Xcode (for iOS/macOS), Android Studio/SDK (for Android), CocoaPods on macOS.
+- Android Studio / Android SDK (for emulator and device tooling).
 
 ## Project Structure
 - `lib/`
@@ -14,6 +14,7 @@ Concise Flutter project for an Instagram‑like UI and flows.
 	- `widgets/` — shared UI (carousel, image adapters, sheets).
 - `assets/images/` — image assets (declared in `pubspec.yaml`).
 - `android/`, `macos/`, `web/` — platform targets.
+- `android/` — Android platform target (this README focuses on Android).
 
 ## Notable Files
 - `lib/screens/home_screen.dart` — feed grid and navigation hub.
@@ -30,16 +31,14 @@ flutter devices        # pick a device id
 flutter run -d <device-id>
 ```
 
-Examples:
+Examples (Android):
 - Android emulator: `flutter run -d emulator-5554`
-- iOS simulator: `flutter run -d ios`
-- macOS desktop: `flutter run -d macos`
-- Web (Chrome): `flutter run -d chrome`
+- Physical device: `flutter run -d <device-id>`
 
-## Platform Notes (brief)
-- iOS/macOS: add usage descriptions in `Info.plist` if using camera/gallery/video:
-	- `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, `NSMicrophoneUsageDescription`.
-- Android: ensure required permissions in `android/app/src/main/AndroidManifest.xml` for camera/gallery as needed.
+## Android Notes (brief)
+- Permissions: update `android/app/src/main/AndroidManifest.xml` when enabling camera/gallery/microphone.
+- Application ID: set `applicationId` in `android/app/build.gradle.kts` (`defaultConfig`).
+- SDK: ensure `minSdk`/`targetSdk` values in `android/app/build.gradle.kts` meet dependency requirements.
 
 ## Assets
 - Place images under `assets/images/`.
@@ -54,5 +53,5 @@ Examples:
 - Tests: `flutter test` (add tests under `test/`).
 
 ## Troubleshooting (quick)
-- If iOS/macOS build fails after dependency changes: `cd ios && pod install` or `cd macos && pod install` (then return to root).
-- If builds act stale: `flutter clean && flutter pub get`.
+- If Android build fails after dependency changes: `flutter clean && flutter pub get` then rebuild.
+- If emulator/device not detected: `flutter devices` and ensure Android SDK path is configured.
